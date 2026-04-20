@@ -5,7 +5,8 @@ import { Grid } from './Grid';
 import { Keyboard } from './Keyboard';
 import { getDailyWord, getRandomWord, WordEntry } from '@/data/words';
 import { motion, AnimatePresence } from 'framer-motion';
-import { BarChart2, RefreshCw, Share2, Lightbulb } from 'lucide-react';
+import { BarChart2, RefreshCw, Share2, Lightbulb, LogOut } from 'lucide-react';
+import { signOut } from 'next-auth/react';
 import { StatsModal } from './StatsModal';
 
 export interface LocalStats {
@@ -417,6 +418,7 @@ export default function GameContainer() {
           {/* Stats */}
           <button
             onClick={handleOpenStats}
+            title="Statistiky"
             style={{
               padding: '8px', border: 'none', borderRadius: '12px',
               background: '#1a1a1a', color: '#fff', cursor: 'pointer',
@@ -424,6 +426,19 @@ export default function GameContainer() {
             }}
           >
             <BarChart2 size={20} />
+          </button>
+
+          {/* Logout */}
+          <button
+            onClick={() => signOut({ callbackUrl: '/login' })}
+            title="Odhlásit se"
+            style={{
+              padding: '8px', border: 'none', borderRadius: '12px',
+              background: '#e74c3c', color: '#fff', cursor: 'pointer',
+              display: 'flex', alignItems: 'center', marginLeft: '4px'
+            }}
+          >
+            <LogOut size={20} />
           </button>
         </div>
       </header>
