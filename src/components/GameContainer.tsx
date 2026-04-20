@@ -5,7 +5,7 @@ import { Grid } from './Grid';
 import { Keyboard } from './Keyboard';
 import { getDailyWord, getRandomWord, WordEntry } from '@/data/words';
 import { motion, AnimatePresence } from 'framer-motion';
-import { BarChart2, RefreshCw, Share2, Lightbulb, LogOut } from 'lucide-react';
+import { BarChart2, RefreshCw, Share2, Lightbulb, LogOut, Timer } from 'lucide-react';
 import { signOut } from 'next-auth/react';
 import { StatsModal } from './StatsModal';
 
@@ -113,6 +113,11 @@ export default function GameContainer() {
 
   const [dictionary, setDictionary] = useState<Set<string> | null>(null);
 
+  const [showDailyConfirm, setShowDailyConfirm] = useState(false);
+  const [isDailyChallenge, setIsDailyChallenge] = useState(false);
+  const [dailyDeadline, setDailyDeadline] = useState<number | null>(null);
+  const [timeLeft, setTimeLeft] = useState<number | null>(null);
+
   const showMsg = (text: string, duration = 2500) => {
     setMessage(text);
     setTimeout(() => setMessage(''), duration);
@@ -148,6 +153,17 @@ export default function GameContainer() {
     if (savedGame) {
       const d = JSON.parse(savedGame);
       if (d.solution?.length === 5) {
+        if (d.isDailyChallenge && d.dailyDeadline) {
+          const remaining = Math.max(0, Math.ceil((d.dailyDeadline - Date.now()) / 1000));
+          if (!d.isGameOver && remaining <= 0) {
+            d.isGameOver = true;
+          } else if (!d.isGameOver) {
+            setIsDailyChallenge(true);
+            setDailyDeadline(d.dailyDeadline);
+            setTimeLeft(remaining);
+          }
+        }
+
         setWordEntry({ word: d.solution, hint: d.hint || '' });
         setGuesses(d.guesses);
         setIsGameOver(d.isGameOver);
@@ -163,6 +179,30 @@ export default function GameContainer() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  useEffect(() => {
+    if (!isDailyChallenge || !dailyDeadline || isGameOver || isWin) return;
+
+    const remainingNow = Math.max(0, Math.ceil((dailyDeadline - Date.now()) / 1000));
+    setTimeLeft(remainingNow);
+    if (remainingNow <= 0) {
+      handleFinalState(guesses, true, false);
+      return;
+    }
+
+    const interval = setInterval(() => {
+      const remaining = Math.max(0, Math.ceil((dailyDeadline - Date.now()) / 1000));
+      setTimeLeft(remaining);
+
+      if (remaining <= 0) {
+        clearInterval(interval);
+        handleFinalState(guesses, true, false);
+      }
+    }, 1000);
+
+    return () => clearInterval(interval);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isDailyChallenge, dailyDeadline, isGameOver, isWin, guesses]);
+
   const startNewGame = (isDaily = false) => {
     const entry = isDaily ? getDailyWord() : getRandomWord();
     setWordEntry(entry);
@@ -174,9 +214,37 @@ export default function GameContainer() {
     setHintLetter(undefined);
     setShowHint(false);
     setHintUsed(false);
+    setIsDailyChallenge(false);
+    setDailyDeadline(null);
+    setTimeLeft(null);
     localStorage.setItem('krystal_active_game', JSON.stringify({
       solution: entry.word, hint: entry.hint,
       guesses: [], isGameOver: false, isWin: false, hintUsed: false,
+    }));
+  };
+
+  const startDailyTimeoutGame = () => {
+    const entry = getDailyWord();
+    setWordEntry(entry);
+    setGuesses([]);
+    setCurrentGuess('');
+    setIsGameOver(false);
+    setIsWin(false);
+    setMessage('');
+    setHintLetter(undefined);
+    setShowHint(false);
+    setHintUsed(false);
+    
+    setIsDailyChallenge(true);
+    const deadline = Date.now() + 60 * 1000;
+    setDailyDeadline(deadline);
+    setTimeLeft(60);
+    setShowDailyConfirm(false);
+
+    localStorage.setItem('krystal_active_game', JSON.stringify({
+      solution: entry.word, hint: entry.hint,
+      guesses: [], isGameOver: false, isWin: false, hintUsed: false,
+      isDailyChallenge: true, dailyDeadline: deadline
     }));
   };
 
@@ -208,6 +276,7 @@ export default function GameContainer() {
     localStorage.setItem('krystal_active_game', JSON.stringify({
       solution, hint: wordEntry.hint, guesses: newGuesses,
       isGameOver: false, isWin: false, hintUsed,
+      isDailyChallenge, dailyDeadline
     }));
 
     if (currentGuess === solution) {
@@ -232,7 +301,8 @@ export default function GameContainer() {
 
     localStorage.setItem('krystal_active_game', JSON.stringify({
       solution, hint: wordEntry.hint, guesses: newGuesses,
-      isGameOver: true, isWin: win, hintUsed,
+      isGameOver: over, isWin: win, hintUsed,
+      isDailyChallenge, dailyDeadline
     }));
 
     // Save to server (per-user account)
@@ -368,9 +438,85 @@ export default function GameContainer() {
         )}
       </AnimatePresence>
 
+      {/* Daily confirm modal */}
+      <AnimatePresence>
+        {showDailyConfirm && (
+          <motion.div
+            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            style={{
+              position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+              background: 'rgba(0,0,0,0.8)', zIndex: 200,
+              display: 'flex', alignItems: 'center', justifyContent: 'center'
+            }}
+          >
+            <motion.div
+              initial={{ scale: 0.9, y: 20 }} animate={{ scale: 1, y: 0 }}
+              style={{
+                background: '#ffffff', borderRadius: '20px', padding: '32px',
+                maxWidth: '380px', textAlign: 'center', boxShadow: '0 20px 60px rgba(0,0,0,0.5)'
+              }}
+            >
+              <Timer size={40} color="#8e44ad" style={{ marginBottom: '16px' }} />
+              <h2 style={{ fontSize: '1.25rem', color: '#1a1a1a', marginBottom: '16px', fontWeight: '800' }}>Denní Výzva!</h2>
+              <p style={{ fontSize: '1rem', color: '#444', lineHeight: '1.5', marginBottom: '24px' }}>
+                Opravdu chceš spustit denní výzvu? Všichni hráči mají dnes stejné slovo.<br/><br/>
+                <strong>Máš přesně 1 minutu</strong> na uhodnutí. Během této doby se ti bude odečítat čas.
+              </p>
+              <div style={{ display: 'flex', gap: '12px', justifyContent: 'center' }}>
+                <button
+                  onClick={() => setShowDailyConfirm(false)}
+                  style={{
+                    padding: '10px 20px', border: 'none', borderRadius: '20px',
+                    background: '#ddd', color: '#333', fontSize: '0.9rem', fontWeight: '700', cursor: 'pointer'
+                  }}
+                >
+                  Zrušit
+                </button>
+                <button
+                  onClick={startDailyTimeoutGame}
+                  style={{
+                    padding: '10px 20px', border: 'none', borderRadius: '20px',
+                    background: '#8e44ad', color: '#fff', fontSize: '0.9rem', fontWeight: '700', cursor: 'pointer'
+                  }}
+                >
+                  Start!
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       <header>
         <div className="logo">KRYSTAL</div>
         <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+          {/* Daily Timer Button / Display */}
+          {isDailyChallenge ? (
+            <div
+              style={{
+                padding: '8px 12px', borderRadius: '20px',
+                background: (timeLeft !== null && timeLeft <= 10) ? '#e74c3c' : '#34495e',
+                color: '#fff', fontSize: '0.85rem', fontWeight: '800',
+                display: 'flex', alignItems: 'center', gap: '5px',
+                fontFamily: 'monospace'
+              }}
+            >
+              <Timer size={15} /> 00:{timeLeft?.toString().padStart(2, '0') || '00'}
+            </div>
+          ) : (
+            <button
+              onClick={() => setShowDailyConfirm(true)}
+              title="Spustit denní výzvu (1 minuta!)"
+              style={{
+                padding: '8px 12px', border: 'none', borderRadius: '20px',
+                background: '#8e44ad', color: '#fff', fontSize: '0.75rem', fontWeight: '700',
+                display: 'flex', alignItems: 'center', gap: '5px', cursor: 'pointer',
+              }}
+            >
+              <Timer size={15} /> Daily
+            </button>
+          )}
+
           {/* Hint */}
           {!isGameOver && (
             <button
