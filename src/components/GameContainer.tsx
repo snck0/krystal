@@ -506,13 +506,12 @@ export default function GameContainer() {
         style={{
           position: 'fixed', top: '24px', left: '24px',
           display: 'flex', alignItems: 'center', gap: '8px',
-          background: '#f8f8f8', padding: '8px 16px 8px 12px',
-          borderRadius: '24px', color: '#1a1a1a', textDecoration: 'none',
-          fontWeight: '700', fontSize: '0.9rem', boxShadow: '0 2px 10px rgba(0,0,0,0.1)',
-          zIndex: 100, transition: 'all 0.2s'
+          color: '#666', textDecoration: 'none',
+          fontWeight: '700', fontSize: '0.9rem',
+          zIndex: 100, transition: 'color 0.2s'
         }}
-        onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#eaeaea'}
-        onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#f8f8f8'}
+        onMouseEnter={(e) => e.currentTarget.style.color = '#1a1a1a'}
+        onMouseLeave={(e) => e.currentTarget.style.color = '#666'}
       >
         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
           <path d="m15 18-6-6 6-6"/>
