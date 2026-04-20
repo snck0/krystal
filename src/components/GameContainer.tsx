@@ -117,6 +117,7 @@ export default function GameContainer() {
   const [isDailyChallenge, setIsDailyChallenge] = useState(false);
   const [dailyDeadline, setDailyDeadline] = useState<number | null>(null);
   const [timeLeft, setTimeLeft] = useState<number | null>(null);
+  const [hasPlayedDailyToday, setHasPlayedDailyToday] = useState(false);
 
   const showMsg = (text: string, duration = 2500) => {
     setMessage(text);
@@ -138,6 +139,11 @@ export default function GameContainer() {
   };
 
   useEffect(() => {
+    const dateStr = new Date().toISOString().split('T')[0];
+    if (localStorage.getItem(`krystal_daily_played_${dateStr}`) === 'true') {
+      setHasPlayedDailyToday(true);
+    }
+
     // Load dictionary
     (async () => {
       try {
@@ -240,6 +246,10 @@ export default function GameContainer() {
     setDailyDeadline(deadline);
     setTimeLeft(120);
     setShowDailyConfirm(false);
+
+    const dateStr = new Date().toISOString().split('T')[0];
+    localStorage.setItem(`krystal_daily_played_${dateStr}`, 'true');
+    setHasPlayedDailyToday(true);
 
     localStorage.setItem('krystal_active_game', JSON.stringify({
       solution: entry.word, hint: entry.hint,
@@ -503,6 +513,18 @@ export default function GameContainer() {
             >
               <Timer size={15} /> {Math.floor((timeLeft || 0) / 60).toString().padStart(2, '0')}:{(Math.floor(timeLeft || 0) % 60).toString().padStart(2, '0')}
             </div>
+          ) : hasPlayedDailyToday ? (
+            <button
+              disabled
+              title="Dnešní výzvu už máš za sebou!"
+              style={{
+                padding: '8px 12px', border: 'none', borderRadius: '20px',
+                background: '#555', color: '#999', fontSize: '0.75rem', fontWeight: '700',
+                display: 'flex', alignItems: 'center', gap: '5px', cursor: 'not-allowed',
+              }}
+            >
+              <Timer size={15} /> Odehráno
+            </button>
           ) : (
             <button
               onClick={() => setShowDailyConfirm(true)}
