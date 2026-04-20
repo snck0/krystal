@@ -236,9 +236,9 @@ export default function GameContainer() {
     setHintUsed(false);
     
     setIsDailyChallenge(true);
-    const deadline = Date.now() + 60 * 1000;
+    const deadline = Date.now() + 120 * 1000;
     setDailyDeadline(deadline);
-    setTimeLeft(60);
+    setTimeLeft(120);
     setShowDailyConfirm(false);
 
     localStorage.setItem('krystal_active_game', JSON.stringify({
@@ -460,7 +460,7 @@ export default function GameContainer() {
               <h2 style={{ fontSize: '1.25rem', color: '#1a1a1a', marginBottom: '16px', fontWeight: '800' }}>Denní Výzva!</h2>
               <p style={{ fontSize: '1rem', color: '#444', lineHeight: '1.5', marginBottom: '24px' }}>
                 Opravdu chceš spustit denní výzvu? Všichni hráči mají dnes stejné slovo.<br/><br/>
-                <strong>Máš přesně 1 minutu</strong> na uhodnutí. Během této doby se ti bude odečítat čas.
+                <strong>Máš přesně 2 minuty</strong> na uhodnutí. Během této doby se ti bude odečítat čas.
               </p>
               <div style={{ display: 'flex', gap: '12px', justifyContent: 'center' }}>
                 <button
@@ -501,12 +501,12 @@ export default function GameContainer() {
                 fontFamily: 'monospace'
               }}
             >
-              <Timer size={15} /> 00:{timeLeft?.toString().padStart(2, '0') || '00'}
+              <Timer size={15} /> {Math.floor((timeLeft || 0) / 60).toString().padStart(2, '0')}:{(Math.floor(timeLeft || 0) % 60).toString().padStart(2, '0')}
             </div>
           ) : (
             <button
               onClick={() => setShowDailyConfirm(true)}
-              title="Spustit denní výzvu (1 minuta!)"
+              title="Spustit denní výzvu (2 minuty!)"
               style={{
                 padding: '8px 12px', border: 'none', borderRadius: '20px',
                 background: '#8e44ad', color: '#fff', fontSize: '0.75rem', fontWeight: '700',
