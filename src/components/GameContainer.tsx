@@ -76,13 +76,28 @@ const playSound = (type: 'key' | 'win' | 'lose' | 'hint') => {
 };
 
 const buildShareText = (guesses: string[], solution: string, isWin: boolean): string => {
-  const lines = guesses.map(guess =>
-    guess.split('').map((letter, i) => {
-      if (letter === solution[i]) return '🟩';
-      if (solution.includes(letter)) return '🟨';
-      return '⬛';
-    }).join('')
-  );
+  const lines = guesses.map(guess => {
+    const statuses: ('🟩' | '🟨' | '⬛')[] = Array(guess.length).fill('⬛');
+    const solutionChars = solution.split('');
+    
+    for (let i = 0; i < guess.length; i++) {
+      if (guess[i] === solution[i]) {
+        statuses[i] = '🟩';
+        solutionChars[i] = null as any;
+      }
+    }
+    
+    for (let i = 0; i < guess.length; i++) {
+      if (statuses[i] !== '🟩') {
+        const idx = solutionChars.indexOf(guess[i]);
+        if (idx !== -1) {
+          statuses[i] = '🟨';
+          solutionChars[idx] = null as any;
+        }
+      }
+    }
+    return statuses.join('');
+  });
   const result = isWin ? `${guesses.length}/8` : 'X/8';
   const wordLine = isWin ? `Slovo: ${solution.toUpperCase()}` : `Slovo bylo: ${solution.toUpperCase()}`;
   return `KRYSTAL ${result}\n${wordLine}\n\n${lines.join('\n')}`;

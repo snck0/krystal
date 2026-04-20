@@ -10,14 +10,30 @@ interface GridProps {
 }
 
 export const Grid: React.FC<GridProps> = ({ guesses, currentGuess, solution, isGameOver, wordLength }) => {
-  const getStatus = (index: number, rowIndex: number) => {
-    const guess = guesses[rowIndex];
-    if (!guess) return 'empty';
+  const getRowStatuses = (guess: string) => {
+    if (!guess) return [];
+    const statuses: ('correct' | 'present' | 'absent' | 'empty')[] = Array(wordLength).fill('absent');
+    const solutionChars = solution.split('');
     
-    const letter = guess[index];
-    if (letter === solution[index]) return 'correct';
-    if (solution.includes(letter)) return 'present';
-    return 'absent';
+    // First pass: exact matches
+    for (let i = 0; i < guess.length; i++) {
+      if (guess[i] === solution[i]) {
+        statuses[i] = 'correct';
+        solutionChars[i] = null as any; 
+      }
+    }
+    
+    // Second pass: present matches
+    for (let i = 0; i < guess.length; i++) {
+      if (statuses[i] !== 'correct') {
+        const idx = solutionChars.indexOf(guess[i]);
+        if (idx !== -1) {
+          statuses[i] = 'present';
+          solutionChars[idx] = null as any; 
+        }
+      }
+    }
+    return statuses;
   };
 
   const rows = Array.from({ length: 8 });
@@ -26,13 +42,16 @@ export const Grid: React.FC<GridProps> = ({ guesses, currentGuess, solution, isG
   return (
     <div className="grid-container" style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
       {/* Finished guesses */}
-      {guesses.map((guess, i) => (
-        <div key={i} className="key-row" style={{ display: 'flex', gap: '8px' }}>
-          {guess.split('').map((letter, j) => (
-            <Tile key={j} letter={letter} status={getStatus(j, i)} delay={j} />
-          ))}
-        </div>
-      ))}
+      {guesses.map((guess, i) => {
+        const rowStatuses = getRowStatuses(guess);
+        return (
+          <div key={i} className="key-row" style={{ display: 'flex', gap: '8px' }}>
+            {guess.split('').map((letter, j) => (
+              <Tile key={j} letter={letter} status={rowStatuses[j]} delay={j} />
+            ))}
+          </div>
+        );
+      })}
 
       {/* Current guess */}
       {!isGameOver && (
