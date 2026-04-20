@@ -389,9 +389,9 @@ export default function GameContainer() {
       <AnimatePresence>
         {message && (
           <motion.div
-            initial={{ y: -50, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: -50, opacity: 0 }}
+            initial={{ y: -50, x: '-50%', opacity: 0 }} animate={{ y: 0, x: '-50%', opacity: 1 }} exit={{ y: -50, x: '-50%', opacity: 0 }}
             style={{
-              position: 'fixed', top: '16px', left: '50%', transform: 'translateX(-50%)',
+              position: 'fixed', top: '16px', left: '50%',
               zIndex: 100, background: '#1a1a1a', color: '#ffffff',
               padding: '10px 24px', borderRadius: '30px', fontSize: '0.85rem',
               fontWeight: '700', boxShadow: '0 4px 20px rgba(0,0,0,0.3)',
@@ -407,9 +407,9 @@ export default function GameContainer() {
       <AnimatePresence>
         {shareMessage && (
           <motion.div
-            initial={{ y: 50, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: 50, opacity: 0 }}
+            initial={{ y: 50, x: '-50%', opacity: 0 }} animate={{ y: 0, x: '-50%', opacity: 1 }} exit={{ y: 50, x: '-50%', opacity: 0 }}
             style={{
-              position: 'fixed', bottom: '30px', left: '50%', transform: 'translateX(-50%)',
+              position: 'fixed', bottom: '30px', left: '50%',
               zIndex: 100, background: '#27ae60', color: '#ffffff',
               padding: '10px 24px', borderRadius: '30px', fontSize: '0.85rem',
               fontWeight: '700', boxShadow: '0 4px 20px rgba(0,0,0,0.2)', whiteSpace: 'nowrap',
@@ -500,7 +500,22 @@ export default function GameContainer() {
       </AnimatePresence>
 
       <header>
-        <div className="logo">KRYSTAL</div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <a
+            href="https://sebian.cz"
+            title="Zpět na hlavní stránku"
+            style={{
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              width: '32px', height: '32px', borderRadius: '50%', background: '#f0f0f0',
+              color: '#333', textDecoration: 'none', fontWeight: 'bold'
+            }}
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="m15 18-6-6 6-6"/>
+            </svg>
+          </a>
+          <div className="logo">KRYSTAL</div>
+        </div>
         <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
           {/* Daily Timer Button / Display */}
           {isDailyChallenge ? (
