@@ -144,6 +144,8 @@ export default function GameContainer() {
       setHasPlayedDailyToday(true);
     }
 
+    loadServerStats();
+
     // Load dictionary
     (async () => {
       try {
@@ -326,7 +328,7 @@ export default function GameContainer() {
         points: win ? points : 0,
         isWin: win,
       }),
-    }).catch(() => { /* silent */ });
+    }).then(() => loadServerStats()).catch(() => { /* silent */ });
 
     setTimeout(() => setShowStats(true), 2500);
   };
