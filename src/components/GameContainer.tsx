@@ -545,7 +545,7 @@ export default function GameContainer() {
                 display: 'flex', alignItems: 'center', gap: '5px', cursor: 'not-allowed',
               }}
             >
-              <Timer size={15} /> Odehráno
+              <Timer size={15} /> <span className="action-text">Odehráno</span>
             </button>
           ) : (
             <button
@@ -557,7 +557,7 @@ export default function GameContainer() {
                 display: 'flex', alignItems: 'center', gap: '5px', cursor: 'pointer',
               }}
             >
-              <Timer size={15} /> Daily
+              <Timer size={15} /> <span className="action-text">Daily</span>
             </button>
           )}
 
@@ -575,7 +575,7 @@ export default function GameContainer() {
               }}
             >
               <Lightbulb size={15} />
-              {hintUsed ? 'Použita' : 'Nápověda'}
+              {hintUsed ? <span className="action-text">Použita</span> : <span className="action-text">Nápověda</span>}
             </button>
           )}
 
@@ -590,7 +590,7 @@ export default function GameContainer() {
                   display: 'flex', alignItems: 'center', gap: '5px', cursor: 'pointer',
                 }}
               >
-                <Share2 size={15} /> Sdílet
+                <Share2 size={15} /> <span className="action-text">Sdílet</span>
               </button>
               <button
                 onClick={() => startNewGame()}
@@ -600,7 +600,7 @@ export default function GameContainer() {
                   display: 'flex', alignItems: 'center', gap: '5px', cursor: 'pointer',
                 }}
               >
-                <RefreshCw size={15} /> Další slovo
+                <RefreshCw size={15} /> <span className="action-text">Další slovo</span>
               </button>
             </>
           )}
